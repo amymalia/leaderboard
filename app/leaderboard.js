@@ -28,15 +28,15 @@ if(Meteor.isClient){
     },
     'click .increment': function() {
       let selectedPlayer = Session.get('selectedPlayer');
-      PlayersList.update({_id: selectedPlayer}, {$inc:  {score: 5}});
+      Meteor.call('updateScore', selectedPlayer, 5);
     },
     'click .decrement' : function() {
       let selectedPlayer = Session.get('selectedPlayer');
-      PlayersList.update({_id: selectedPlayer}, {$inc: {score: -5}});
+      Meteor.call('updateScore', selectedPlayer, -5);
     },
     'click .remove' : function() {
       let selectedPlayer = Session.get('selectedPlayer');
-      PlayersList.remove({_id: selectedPlayer });
+      Meteor.call('removePlayer', selectedPlayer);
     }
   });
 
@@ -44,12 +44,7 @@ if(Meteor.isClient){
     'submit form' : function(event){
       event.preventDefault();
       let playerNameVar = event.target.playerName.value;
-      let currentUserId = Meteor.userId();
-      PlayersList.insert({
-        name: playerNameVar,
-        score: 0,
-        createdBy: currentUserId
-      });
+      Meteor.call('createPlayer', playerNameVar);
       event.target.playerName.value="";
     }
   });
@@ -61,3 +56,32 @@ if(Meteor.isServer){
     return PlayersList.find({createdBy: currentUserId});
   });
 }
+
+Meteor.methods({
+  'createPlayer' : function(playerNameVar) {
+    check(playernameVar, String);
+    let currentUserId = Meteor.userId();
+    if(currentUserId) {
+      PlayersList.insert({
+        name: playerNameVar,
+        score: 0,
+        createdBy: currentUserId
+      });
+    }
+  },
+  'removePlayer' : function(selectedPlayer) {
+    check(selectedPlayer, String);
+    let currentUserId = Meteor.userId();
+    if(currentUserId) {
+      PlayersList.remove({ _id: selectedPlayer, createdBy: currentUserId });
+    }
+  },
+  'updateScore' : function(selectedPlayer, scoreValue) {
+    check(selectedPlayer, String);
+    check(scoreValue, Number);
+    let currentUserId = Meteor.userId();
+    if(currentUserId) {
+      PlayersList.update({_id: selectedPlayer, createdBy: currentUserId},
+        {$inc: {score:scoreValue}});}
+  }
+});
