@@ -3,7 +3,7 @@ PlayersList = new Mongo.Collection('players');
 if(Meteor.isClient){
   Template.leaderboard.helpers({
     'player' : function() {
-      return PlayersList.find();
+      return PlayersList.find({},{sort: {score: -1, name: 1}});
     },
     'selectedClass': function(){
       let playerId = this._id;
@@ -11,6 +11,10 @@ if(Meteor.isClient){
       if(playerId == selectedPlayer) {
         return "selected";
       }
+    },
+    'selectedPlayer' : function(){
+      let selectedPlayer = Session.get('selectedPlayer');
+      return PlayersList.findOne({_id: selectedPlayer});
     }
   });
 
@@ -18,6 +22,30 @@ if(Meteor.isClient){
     'click .player': function() {
       let playerId = this._id;
       Session.set('selectedPlayer', playerId);
+    },
+    'click .increment': function() {
+      let selectedPlayer = Session.get('selectedPlayer');
+      PlayersList.update({_id: selectedPlayer}, {$inc:  {score: 5}});
+    },
+    'click .decrement' : function() {
+      let selectedPlayer = Session.get('selectedPlayer');
+      PlayersList.update({_id: selectedPlayer}, {$inc: {score: -5}});
+    },
+    'click .remove' : function() {
+      let selectedPlayer = Session.get('selectedPlayer');
+      PlayersList.remove({_id: selectedPlayer });
+    }
+  });
+
+  Template.addPlayerForm.events({
+    'submit form' : function(event){
+      event.preventDefault();
+      let playerNameVar = event.target.playerName.value;
+      PlayersList.insert({
+        name: playerNameVar,
+        score: 0
+      });
+      event.target.playerName.value="";
     }
   });
 }
