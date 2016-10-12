@@ -1,4 +1,6 @@
-PlayersList = new Mongo.Collection('players');
+//PlayersList = new Mongo.Collection('players');
+export const PlayersList = new Mongo.Collection('players');
+
 
 if(Meteor.isClient){
   Meteor.subscribe('thePlayers');
@@ -59,7 +61,7 @@ if(Meteor.isServer){
 
 Meteor.methods({
   'createPlayer' : function(playerNameVar) {
-    check(playernameVar, String);
+    check(playerNameVar, String);
     let currentUserId = Meteor.userId();
     if(currentUserId) {
       PlayersList.insert({
